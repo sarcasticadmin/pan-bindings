@@ -4,10 +4,7 @@ go 1.21
 
 toolchain go1.21.7
 
-require (
-	github.com/netsec-ethz/scion-apps v0.5.1-0.20231107140149-3afc9a911808
-	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
-)
+require github.com/netsec-ethz/scion-apps v0.5.1-0.20231107140149-3afc9a911808
 
 require (
 	github.com/antlr/antlr4 v0.0.0-20181218183524-be58ebffde8e // indirect
