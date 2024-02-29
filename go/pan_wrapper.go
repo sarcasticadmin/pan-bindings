@@ -43,6 +43,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
+	"net/netip"
 	"os"
 	"runtime/cgo"
 	"sync"
@@ -50,7 +51,6 @@ import (
 	"unsafe"
 
 	"github.com/netsec-ethz/scion-apps/pkg/pan"
-	"inet.af/netaddr"
 )
 
 const STREAM_HDR_SIZE = 4
@@ -116,10 +116,10 @@ func PanUDPAddrNew(ia *C.cuint64_t, ip *C.cuint8_t, ip_len C.int, port C.uint16_
 	// IP
 	if ip_len == 4 {
 		b := (*[4]byte)(unsafe.Pointer(ip))
-		addr.IP = netaddr.IPFrom4(*b)
+		addr.IP = netip.AddrFrom4(*b)
 	} else if ip_len == 16 {
 		b := (*[16]byte)(unsafe.Pointer(ip))
-		addr.IP = netaddr.IPFrom16(*b)
+		addr.IP = netip.AddrFrom16(*b)
 	} else {
 		return 0
 	}
@@ -502,7 +502,7 @@ func PanListenUDP(
 	listen *C.cchar_t, selector C.PanReplySelector, conn *C.PanListenConn) C.PanError {
 	var sel pan.ReplySelector = nil
 
-	local, err := netaddr.ParseIPPort(C.GoString(listen))
+	local, err := netip.ParseAddrPort(C.GoString(listen))
 	if err != nil {
 		return C.PAN_ERR_ADDR_SYNTAX
 	}
@@ -770,13 +770,13 @@ func PanDialUDP(
 	policy C.PanPolicy,
 	selector C.PanSelector,
 	conn *C.PanConn) C.PanError {
-	var loc netaddr.IPPort = netaddr.IPPort{}
+	var loc netip.AddrPort = netip.AddrPort{}
 	var pol pan.Policy = nil
 	var sel pan.Selector = nil
 	var err error
 
 	if local != nil {
-		loc, err = netaddr.ParseIPPort(C.GoString(local))
+		loc, err = netip.ParseAddrPort(C.GoString(local))
 		if err != nil {
 			return C.PAN_ERR_ADDR_SYNTAX
 		}
@@ -1176,9 +1176,9 @@ func (ls *ListenSockAdapter) unixToPan() {
 		to.IA = (pan.IA)(binary.BigEndian.Uint64(buffer[:8]))
 		addr_len := binary.LittleEndian.Uint32(buffer[8:12])
 		if addr_len == 4 {
-			to.IP = netaddr.IPFrom4(*(*[4]byte)(buffer[12:16]))
+			to.IP = netip.AddrFrom4(*(*[4]byte)(buffer[12:16]))
 		} else if addr_len == 16 {
-			to.IP = netaddr.IPFrom16(*(*[16]byte)(buffer[12:28]))
+			to.IP = netip.AddrFrom16(*(*[16]byte)(buffer[12:28]))
 		} else {
 			continue
 		}
@@ -1494,9 +1494,9 @@ func (ls *ListenSSockAdapter) unixToPan() {
 		to.IA = (pan.IA)(binary.BigEndian.Uint64(buffer[:8]))
 		addr_len := binary.LittleEndian.Uint32(buffer[8:12])
 		if addr_len == 4 {
-			to.IP = netaddr.IPFrom4(*(*[4]byte)(buffer[12:16]))
+			to.IP = netip.AddrFrom4(*(*[4]byte)(buffer[12:16]))
 		} else if addr_len == 16 {
-			to.IP = netaddr.IPFrom16(*(*[16]byte)(buffer[12:28]))
+			to.IP = netip.AddrFrom16(*(*[16]byte)(buffer[12:28]))
 		} else {
 			continue
 		}
